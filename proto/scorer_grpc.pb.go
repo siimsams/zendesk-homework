@@ -19,14 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ScorerService_GetOverallScore_FullMethodName = "/scorer.ScorerService/GetOverallScore"
+	ScorerService_GetAggregatedCategoryScores_FullMethodName    = "/scorer.ScorerService/GetAggregatedCategoryScores"
+	ScorerService_GetScoresByTicket_FullMethodName              = "/scorer.ScorerService/GetScoresByTicket"
+	ScorerService_GetOverallScore_FullMethodName                = "/scorer.ScorerService/GetOverallScore"
+	ScorerService_GetPeriodOverPeriodScoreChange_FullMethodName = "/scorer.ScorerService/GetPeriodOverPeriodScoreChange"
 )
 
 // ScorerServiceClient is the client API for ScorerService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ScorerServiceClient interface {
+	GetAggregatedCategoryScores(ctx context.Context, in *ScoreRequest, opts ...grpc.CallOption) (*AggregatedCategoryScoresResponse, error)
+	GetScoresByTicket(ctx context.Context, in *ScoreRequest, opts ...grpc.CallOption) (*ScoreByTicketResponse, error)
 	GetOverallScore(ctx context.Context, in *ScoreRequest, opts ...grpc.CallOption) (*ScoreResponse, error)
+	GetPeriodOverPeriodScoreChange(ctx context.Context, in *ScoreRequest, opts ...grpc.CallOption) (*PeriodOverPeriodScoreChangeResponse, error)
 }
 
 type scorerServiceClient struct {
@@ -35,6 +41,26 @@ type scorerServiceClient struct {
 
 func NewScorerServiceClient(cc grpc.ClientConnInterface) ScorerServiceClient {
 	return &scorerServiceClient{cc}
+}
+
+func (c *scorerServiceClient) GetAggregatedCategoryScores(ctx context.Context, in *ScoreRequest, opts ...grpc.CallOption) (*AggregatedCategoryScoresResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AggregatedCategoryScoresResponse)
+	err := c.cc.Invoke(ctx, ScorerService_GetAggregatedCategoryScores_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *scorerServiceClient) GetScoresByTicket(ctx context.Context, in *ScoreRequest, opts ...grpc.CallOption) (*ScoreByTicketResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ScoreByTicketResponse)
+	err := c.cc.Invoke(ctx, ScorerService_GetScoresByTicket_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *scorerServiceClient) GetOverallScore(ctx context.Context, in *ScoreRequest, opts ...grpc.CallOption) (*ScoreResponse, error) {
@@ -47,11 +73,24 @@ func (c *scorerServiceClient) GetOverallScore(ctx context.Context, in *ScoreRequ
 	return out, nil
 }
 
+func (c *scorerServiceClient) GetPeriodOverPeriodScoreChange(ctx context.Context, in *ScoreRequest, opts ...grpc.CallOption) (*PeriodOverPeriodScoreChangeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PeriodOverPeriodScoreChangeResponse)
+	err := c.cc.Invoke(ctx, ScorerService_GetPeriodOverPeriodScoreChange_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ScorerServiceServer is the server API for ScorerService service.
 // All implementations must embed UnimplementedScorerServiceServer
 // for forward compatibility.
 type ScorerServiceServer interface {
+	GetAggregatedCategoryScores(context.Context, *ScoreRequest) (*AggregatedCategoryScoresResponse, error)
+	GetScoresByTicket(context.Context, *ScoreRequest) (*ScoreByTicketResponse, error)
 	GetOverallScore(context.Context, *ScoreRequest) (*ScoreResponse, error)
+	GetPeriodOverPeriodScoreChange(context.Context, *ScoreRequest) (*PeriodOverPeriodScoreChangeResponse, error)
 	mustEmbedUnimplementedScorerServiceServer()
 }
 
@@ -62,8 +101,17 @@ type ScorerServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedScorerServiceServer struct{}
 
+func (UnimplementedScorerServiceServer) GetAggregatedCategoryScores(context.Context, *ScoreRequest) (*AggregatedCategoryScoresResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAggregatedCategoryScores not implemented")
+}
+func (UnimplementedScorerServiceServer) GetScoresByTicket(context.Context, *ScoreRequest) (*ScoreByTicketResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetScoresByTicket not implemented")
+}
 func (UnimplementedScorerServiceServer) GetOverallScore(context.Context, *ScoreRequest) (*ScoreResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOverallScore not implemented")
+}
+func (UnimplementedScorerServiceServer) GetPeriodOverPeriodScoreChange(context.Context, *ScoreRequest) (*PeriodOverPeriodScoreChangeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPeriodOverPeriodScoreChange not implemented")
 }
 func (UnimplementedScorerServiceServer) mustEmbedUnimplementedScorerServiceServer() {}
 func (UnimplementedScorerServiceServer) testEmbeddedByValue()                       {}
@@ -86,6 +134,42 @@ func RegisterScorerServiceServer(s grpc.ServiceRegistrar, srv ScorerServiceServe
 	s.RegisterService(&ScorerService_ServiceDesc, srv)
 }
 
+func _ScorerService_GetAggregatedCategoryScores_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScoreRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ScorerServiceServer).GetAggregatedCategoryScores(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ScorerService_GetAggregatedCategoryScores_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ScorerServiceServer).GetAggregatedCategoryScores(ctx, req.(*ScoreRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ScorerService_GetScoresByTicket_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScoreRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ScorerServiceServer).GetScoresByTicket(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ScorerService_GetScoresByTicket_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ScorerServiceServer).GetScoresByTicket(ctx, req.(*ScoreRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ScorerService_GetOverallScore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ScoreRequest)
 	if err := dec(in); err != nil {
@@ -104,6 +188,24 @@ func _ScorerService_GetOverallScore_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ScorerService_GetPeriodOverPeriodScoreChange_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScoreRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ScorerServiceServer).GetPeriodOverPeriodScoreChange(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ScorerService_GetPeriodOverPeriodScoreChange_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ScorerServiceServer).GetPeriodOverPeriodScoreChange(ctx, req.(*ScoreRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ScorerService_ServiceDesc is the grpc.ServiceDesc for ScorerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -112,8 +214,20 @@ var ScorerService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ScorerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "GetAggregatedCategoryScores",
+			Handler:    _ScorerService_GetAggregatedCategoryScores_Handler,
+		},
+		{
+			MethodName: "GetScoresByTicket",
+			Handler:    _ScorerService_GetScoresByTicket_Handler,
+		},
+		{
 			MethodName: "GetOverallScore",
 			Handler:    _ScorerService_GetOverallScore_Handler,
+		},
+		{
+			MethodName: "GetPeriodOverPeriodScoreChange",
+			Handler:    _ScorerService_GetPeriodOverPeriodScoreChange_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

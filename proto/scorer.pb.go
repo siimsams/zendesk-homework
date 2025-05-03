@@ -117,6 +117,274 @@ func (x *ScoreResponse) GetScorePercentage() float64 {
 	return 0
 }
 
+type TicketScore struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	TicketId       int64                  `protobuf:"varint,1,opt,name=ticketId,proto3" json:"ticketId,omitempty"`
+	CategoryScores map[string]float64     `protobuf:"bytes,2,rep,name=categoryScores,proto3" json:"categoryScores,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"fixed64,2,opt,name=value"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *TicketScore) Reset() {
+	*x = TicketScore{}
+	mi := &file_proto_scorer_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TicketScore) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TicketScore) ProtoMessage() {}
+
+func (x *TicketScore) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_scorer_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TicketScore.ProtoReflect.Descriptor instead.
+func (*TicketScore) Descriptor() ([]byte, []int) {
+	return file_proto_scorer_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *TicketScore) GetTicketId() int64 {
+	if x != nil {
+		return x.TicketId
+	}
+	return 0
+}
+
+func (x *TicketScore) GetCategoryScores() map[string]float64 {
+	if x != nil {
+		return x.CategoryScores
+	}
+	return nil
+}
+
+type ScoreByTicketResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TicketScores  []*TicketScore         `protobuf:"bytes,1,rep,name=ticketScores,proto3" json:"ticketScores,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ScoreByTicketResponse) Reset() {
+	*x = ScoreByTicketResponse{}
+	mi := &file_proto_scorer_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ScoreByTicketResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ScoreByTicketResponse) ProtoMessage() {}
+
+func (x *ScoreByTicketResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_scorer_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ScoreByTicketResponse.ProtoReflect.Descriptor instead.
+func (*ScoreByTicketResponse) Descriptor() ([]byte, []int) {
+	return file_proto_scorer_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ScoreByTicketResponse) GetTicketScores() []*TicketScore {
+	if x != nil {
+		return x.TicketScores
+	}
+	return nil
+}
+
+type CategoryScore struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Category      string                 `protobuf:"bytes,1,opt,name=category,proto3" json:"category,omitempty"`
+	RatingCount   int32                  `protobuf:"varint,2,opt,name=ratingCount,proto3" json:"ratingCount,omitempty"`
+	DateToScore   map[string]float64     `protobuf:"bytes,3,rep,name=dateToScore,proto3" json:"dateToScore,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"fixed64,2,opt,name=value"`
+	OverallScore  float64                `protobuf:"fixed64,4,opt,name=overallScore,proto3" json:"overallScore,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CategoryScore) Reset() {
+	*x = CategoryScore{}
+	mi := &file_proto_scorer_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CategoryScore) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CategoryScore) ProtoMessage() {}
+
+func (x *CategoryScore) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_scorer_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CategoryScore.ProtoReflect.Descriptor instead.
+func (*CategoryScore) Descriptor() ([]byte, []int) {
+	return file_proto_scorer_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *CategoryScore) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
+}
+
+func (x *CategoryScore) GetRatingCount() int32 {
+	if x != nil {
+		return x.RatingCount
+	}
+	return 0
+}
+
+func (x *CategoryScore) GetDateToScore() map[string]float64 {
+	if x != nil {
+		return x.DateToScore
+	}
+	return nil
+}
+
+func (x *CategoryScore) GetOverallScore() float64 {
+	if x != nil {
+		return x.OverallScore
+	}
+	return 0
+}
+
+type AggregatedCategoryScoresResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Categories    []*CategoryScore       `protobuf:"bytes,1,rep,name=categories,proto3" json:"categories,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AggregatedCategoryScoresResponse) Reset() {
+	*x = AggregatedCategoryScoresResponse{}
+	mi := &file_proto_scorer_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AggregatedCategoryScoresResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AggregatedCategoryScoresResponse) ProtoMessage() {}
+
+func (x *AggregatedCategoryScoresResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_scorer_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AggregatedCategoryScoresResponse.ProtoReflect.Descriptor instead.
+func (*AggregatedCategoryScoresResponse) Descriptor() ([]byte, []int) {
+	return file_proto_scorer_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *AggregatedCategoryScoresResponse) GetCategories() []*CategoryScore {
+	if x != nil {
+		return x.Categories
+	}
+	return nil
+}
+
+type PeriodOverPeriodScoreChangeResponse struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	PreviousPeriodScore float64                `protobuf:"fixed64,1,opt,name=previousPeriodScore,proto3" json:"previousPeriodScore,omitempty"`
+	CurrentPeriodScore  float64                `protobuf:"fixed64,2,opt,name=currentPeriodScore,proto3" json:"currentPeriodScore,omitempty"`
+	ChangePercentage    float64                `protobuf:"fixed64,3,opt,name=changePercentage,proto3" json:"changePercentage,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *PeriodOverPeriodScoreChangeResponse) Reset() {
+	*x = PeriodOverPeriodScoreChangeResponse{}
+	mi := &file_proto_scorer_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PeriodOverPeriodScoreChangeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PeriodOverPeriodScoreChangeResponse) ProtoMessage() {}
+
+func (x *PeriodOverPeriodScoreChangeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_scorer_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PeriodOverPeriodScoreChangeResponse.ProtoReflect.Descriptor instead.
+func (*PeriodOverPeriodScoreChangeResponse) Descriptor() ([]byte, []int) {
+	return file_proto_scorer_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *PeriodOverPeriodScoreChangeResponse) GetPreviousPeriodScore() float64 {
+	if x != nil {
+		return x.PreviousPeriodScore
+	}
+	return 0
+}
+
+func (x *PeriodOverPeriodScoreChangeResponse) GetCurrentPeriodScore() float64 {
+	if x != nil {
+		return x.CurrentPeriodScore
+	}
+	return 0
+}
+
+func (x *PeriodOverPeriodScoreChangeResponse) GetChangePercentage() float64 {
+	if x != nil {
+		return x.ChangePercentage
+	}
+	return 0
+}
+
 var File_proto_scorer_proto protoreflect.FileDescriptor
 
 const file_proto_scorer_proto_rawDesc = "" +
@@ -126,9 +394,36 @@ const file_proto_scorer_proto_rawDesc = "" +
 	"\tstartDate\x18\x01 \x01(\tR\tstartDate\x12\x18\n" +
 	"\aendDate\x18\x02 \x01(\tR\aendDate\"9\n" +
 	"\rScoreResponse\x12(\n" +
-	"\x0fscorePercentage\x18\x01 \x01(\x01R\x0fscorePercentage2O\n" +
-	"\rScorerService\x12>\n" +
-	"\x0fGetOverallScore\x12\x14.scorer.ScoreRequest\x1a\x15.scorer.ScoreResponseB3Z1github.com/siimsams/zendesk-homework/proto;scorerb\x06proto3"
+	"\x0fscorePercentage\x18\x01 \x01(\x01R\x0fscorePercentage\"\xbd\x01\n" +
+	"\vTicketScore\x12\x1a\n" +
+	"\bticketId\x18\x01 \x01(\x03R\bticketId\x12O\n" +
+	"\x0ecategoryScores\x18\x02 \x03(\v2'.scorer.TicketScore.CategoryScoresEntryR\x0ecategoryScores\x1aA\n" +
+	"\x13CategoryScoresEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\"P\n" +
+	"\x15ScoreByTicketResponse\x127\n" +
+	"\fticketScores\x18\x01 \x03(\v2\x13.scorer.TicketScoreR\fticketScores\"\xfb\x01\n" +
+	"\rCategoryScore\x12\x1a\n" +
+	"\bcategory\x18\x01 \x01(\tR\bcategory\x12 \n" +
+	"\vratingCount\x18\x02 \x01(\x05R\vratingCount\x12H\n" +
+	"\vdateToScore\x18\x03 \x03(\v2&.scorer.CategoryScore.DateToScoreEntryR\vdateToScore\x12\"\n" +
+	"\foverallScore\x18\x04 \x01(\x01R\foverallScore\x1a>\n" +
+	"\x10DateToScoreEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\"Y\n" +
+	" AggregatedCategoryScoresResponse\x125\n" +
+	"\n" +
+	"categories\x18\x01 \x03(\v2\x15.scorer.CategoryScoreR\n" +
+	"categories\"\xb3\x01\n" +
+	"#PeriodOverPeriodScoreChangeResponse\x120\n" +
+	"\x13previousPeriodScore\x18\x01 \x01(\x01R\x13previousPeriodScore\x12.\n" +
+	"\x12currentPeriodScore\x18\x02 \x01(\x01R\x12currentPeriodScore\x12*\n" +
+	"\x10changePercentage\x18\x03 \x01(\x01R\x10changePercentage2\xdd\x02\n" +
+	"\rScorerService\x12]\n" +
+	"\x1bGetAggregatedCategoryScores\x12\x14.scorer.ScoreRequest\x1a(.scorer.AggregatedCategoryScoresResponse\x12H\n" +
+	"\x11GetScoresByTicket\x12\x14.scorer.ScoreRequest\x1a\x1d.scorer.ScoreByTicketResponse\x12>\n" +
+	"\x0fGetOverallScore\x12\x14.scorer.ScoreRequest\x1a\x15.scorer.ScoreResponse\x12c\n" +
+	"\x1eGetPeriodOverPeriodScoreChange\x12\x14.scorer.ScoreRequest\x1a+.scorer.PeriodOverPeriodScoreChangeResponseB3Z1github.com/siimsams/zendesk-homework/proto;scorerb\x06proto3"
 
 var (
 	file_proto_scorer_proto_rawDescOnce sync.Once
@@ -142,19 +437,36 @@ func file_proto_scorer_proto_rawDescGZIP() []byte {
 	return file_proto_scorer_proto_rawDescData
 }
 
-var file_proto_scorer_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_scorer_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_proto_scorer_proto_goTypes = []any{
-	(*ScoreRequest)(nil),  // 0: scorer.ScoreRequest
-	(*ScoreResponse)(nil), // 1: scorer.ScoreResponse
+	(*ScoreRequest)(nil),                        // 0: scorer.ScoreRequest
+	(*ScoreResponse)(nil),                       // 1: scorer.ScoreResponse
+	(*TicketScore)(nil),                         // 2: scorer.TicketScore
+	(*ScoreByTicketResponse)(nil),               // 3: scorer.ScoreByTicketResponse
+	(*CategoryScore)(nil),                       // 4: scorer.CategoryScore
+	(*AggregatedCategoryScoresResponse)(nil),    // 5: scorer.AggregatedCategoryScoresResponse
+	(*PeriodOverPeriodScoreChangeResponse)(nil), // 6: scorer.PeriodOverPeriodScoreChangeResponse
+	nil, // 7: scorer.TicketScore.CategoryScoresEntry
+	nil, // 8: scorer.CategoryScore.DateToScoreEntry
 }
 var file_proto_scorer_proto_depIdxs = []int32{
-	0, // 0: scorer.ScorerService.GetOverallScore:input_type -> scorer.ScoreRequest
-	1, // 1: scorer.ScorerService.GetOverallScore:output_type -> scorer.ScoreResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	7, // 0: scorer.TicketScore.categoryScores:type_name -> scorer.TicketScore.CategoryScoresEntry
+	2, // 1: scorer.ScoreByTicketResponse.ticketScores:type_name -> scorer.TicketScore
+	8, // 2: scorer.CategoryScore.dateToScore:type_name -> scorer.CategoryScore.DateToScoreEntry
+	4, // 3: scorer.AggregatedCategoryScoresResponse.categories:type_name -> scorer.CategoryScore
+	0, // 4: scorer.ScorerService.GetAggregatedCategoryScores:input_type -> scorer.ScoreRequest
+	0, // 5: scorer.ScorerService.GetScoresByTicket:input_type -> scorer.ScoreRequest
+	0, // 6: scorer.ScorerService.GetOverallScore:input_type -> scorer.ScoreRequest
+	0, // 7: scorer.ScorerService.GetPeriodOverPeriodScoreChange:input_type -> scorer.ScoreRequest
+	5, // 8: scorer.ScorerService.GetAggregatedCategoryScores:output_type -> scorer.AggregatedCategoryScoresResponse
+	3, // 9: scorer.ScorerService.GetScoresByTicket:output_type -> scorer.ScoreByTicketResponse
+	1, // 10: scorer.ScorerService.GetOverallScore:output_type -> scorer.ScoreResponse
+	6, // 11: scorer.ScorerService.GetPeriodOverPeriodScoreChange:output_type -> scorer.PeriodOverPeriodScoreChangeResponse
+	8, // [8:12] is the sub-list for method output_type
+	4, // [4:8] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_proto_scorer_proto_init() }
@@ -168,7 +480,7 @@ func file_proto_scorer_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_scorer_proto_rawDesc), len(file_proto_scorer_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -4,7 +4,10 @@ package scorer;
 option go_package = "github.com/siimsams/zendesk-homework/proto;scorer";
 
 service ScorerService {
+  rpc GetAggregatedCategoryScores (ScoreRequest) returns (AggregatedCategoryScoresResponse); 
+  rpc GetScoresByTicket (ScoreRequest) returns (ScoreByTicketResponse);
   rpc GetOverallScore (ScoreRequest) returns (ScoreResponse);
+  rpc GetPeriodOverPeriodScoreChange (ScoreRequest) returns (PeriodOverPeriodScoreChangeResponse);
 }
 
 message ScoreRequest {
@@ -14,4 +17,30 @@ message ScoreRequest {
 
 message ScoreResponse {
   double scorePercentage = 1;
+}
+
+message TicketScore {
+  int64 ticketId = 1;
+  map<string, double> categoryScores = 2;
+}
+
+message ScoreByTicketResponse {
+  repeated TicketScore ticketScores = 1;
+}
+
+message CategoryScore {
+  string category = 1;
+  int32 ratingCount = 2;
+  map<string, double> dateToScore = 3;
+  double overallScore = 4;
+}
+
+message AggregatedCategoryScoresResponse {
+  repeated CategoryScore categories = 1;
+}
+
+message PeriodOverPeriodScoreChangeResponse {
+  double previousPeriodScore = 1;
+  double currentPeriodScore = 2;
+  double changePercentage = 3;
 }
