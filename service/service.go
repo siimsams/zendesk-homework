@@ -111,6 +111,67 @@ func (s *ScorerServer) GetScoresByTicket(ctx context.Context, req *scorer.ScoreR
 	}, nil
 }
 
+type categoryAggregation struct {
+	weight       float64
+	totalRatings int
+	totalScore   float64
+	scoresByDate []*scorer.DateScore
+}
+
+func calculateWeightedScore(totalRating, count int) float64 {
+	return (float64(totalRating) / float64(count*5)) * 100
+}
+
+func processAggregations(aggregations []database.CategoryAggregation) map[string]*categoryAggregation {
+	result := make(map[string]*categoryAggregation)
+
+	for _, agg := range aggregations {
+		weightedScore := calculateWeightedScore(agg.TotalRating, agg.Count)
+
+		if _, exists := result[agg.Name]; !exists {
+			result[agg.Name] = &categoryAggregation{
+				weight:       agg.Weight,
+				totalRatings: 0,
+				totalScore:   0,
+				scoresByDate: make([]*scorer.DateScore, 0),
+			}
+		}
+
+		result[agg.Name].totalRatings += agg.Count
+		result[agg.Name].totalScore += weightedScore * float64(agg.Count)
+		result[agg.Name].scoresByDate = append(result[agg.Name].scoresByDate, &scorer.DateScore{
+			Date:  agg.Period,
+			Score: weightedScore,
+		})
+	}
+
+	return result
+}
+
+func convertToCategoryScores(aggregations map[string]*categoryAggregation) []*scorer.CategoryScore {
+	var output []*scorer.CategoryScore
+
+	for name, agg := range aggregations {
+		var avgScore float64
+		if agg.totalRatings > 0 {
+			avgScore = agg.totalScore / float64(agg.totalRatings)
+		}
+
+		sort.Slice(agg.scoresByDate, func(i, j int) bool {
+			return agg.scoresByDate[i].Date < agg.scoresByDate[j].Date
+		})
+
+		output = append(output, &scorer.CategoryScore{
+			Category:     name,
+			RatingCount:  int32(agg.totalRatings),
+			DateToScore:  agg.scoresByDate,
+			OverallScore: avgScore,
+		})
+	}
+
+	return output
+}
+
 func (s *ScorerServer) GetAggregatedCategoryScores(ctx context.Context, req *scorer.ScoreRequest) (*scorer.AggregatedCategoryScoresResponse, error) {
 	start, end, err := parseDateRange(req)
 	if err != nil {
@@ -130,56 +191,11 @@ func (s *ScorerServer) GetAggregatedCategoryScores(ctx context.Context, req *sco
 		return nil, err
 	}
 
-	type tempAgg struct {
-		weight       float64
-		totalRatings int
-		totalScore   float64
-		scoresByDate []*scorer.DateScore
-	}
-
-	result := map[string]*tempAgg{}
-
-	for _, agg := range aggregations {
-		weightedScore := (float64(agg.TotalRating) / float64(agg.Count*5)) * 100
-
-		if _, exists := result[agg.Name]; !exists {
-			result[agg.Name] = &tempAgg{
-				weight:       agg.Weight,
-				totalRatings: 0,
-				totalScore:   0,
-				scoresByDate: make([]*scorer.DateScore, 0),
-			}
-		}
-
-		result[agg.Name].totalRatings += agg.Count
-		result[agg.Name].totalScore += weightedScore * float64(agg.Count)
-		result[agg.Name].scoresByDate = append(result[agg.Name].scoresByDate, &scorer.DateScore{
-			Date:  agg.Period,
-			Score: weightedScore,
-		})
-	}
-
-	var output []*scorer.CategoryScore
-	for name, agg := range result {
-		var avgScore float64
-		if agg.totalRatings > 0 {
-			avgScore = agg.totalScore / float64(agg.totalRatings)
-		}
-
-		sort.Slice(agg.scoresByDate, func(i, j int) bool {
-			return agg.scoresByDate[i].Date < agg.scoresByDate[j].Date
-		})
-
-		output = append(output, &scorer.CategoryScore{
-			Category:     name,
-			RatingCount:  int32(agg.totalRatings),
-			DateToScore:  agg.scoresByDate,
-			OverallScore: avgScore,
-		})
-	}
+	processedAggregations := processAggregations(aggregations)
+	categoryScores := convertToCategoryScores(processedAggregations)
 
 	return &scorer.AggregatedCategoryScoresResponse{
-		Categories: output,
+		Categories: categoryScores,
 	}, nil
 }
 
