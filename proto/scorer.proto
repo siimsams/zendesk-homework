@@ -40,7 +40,11 @@ message AggregatedCategoryScoresResponse {
 }
 
 message PeriodOverPeriodScoreChangeResponse {
-  double previousPeriodScore = 1;
-  double currentPeriodScore = 2;
-  double changePercentage = 3;
+  string previousPeriodStart = 1;
+  string previousPeriodEnd = 2;
+  double previousPeriodScore = 3;
+  string currentPeriodStart = 4;
+  string currentPeriodEnd = 5;
+  double currentPeriodScore = 6;
+  double changePercentage = 7;
 }

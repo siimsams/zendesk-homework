@@ -327,9 +327,13 @@ func (x *AggregatedCategoryScoresResponse) GetCategories() []*CategoryScore {
 
 type PeriodOverPeriodScoreChangeResponse struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
-	PreviousPeriodScore float64                `protobuf:"fixed64,1,opt,name=previousPeriodScore,proto3" json:"previousPeriodScore,omitempty"`
-	CurrentPeriodScore  float64                `protobuf:"fixed64,2,opt,name=currentPeriodScore,proto3" json:"currentPeriodScore,omitempty"`
-	ChangePercentage    float64                `protobuf:"fixed64,3,opt,name=changePercentage,proto3" json:"changePercentage,omitempty"`
+	PreviousPeriodStart string                 `protobuf:"bytes,1,opt,name=previousPeriodStart,proto3" json:"previousPeriodStart,omitempty"`
+	PreviousPeriodEnd   string                 `protobuf:"bytes,2,opt,name=previousPeriodEnd,proto3" json:"previousPeriodEnd,omitempty"`
+	PreviousPeriodScore float64                `protobuf:"fixed64,3,opt,name=previousPeriodScore,proto3" json:"previousPeriodScore,omitempty"`
+	CurrentPeriodStart  string                 `protobuf:"bytes,4,opt,name=currentPeriodStart,proto3" json:"currentPeriodStart,omitempty"`
+	CurrentPeriodEnd    string                 `protobuf:"bytes,5,opt,name=currentPeriodEnd,proto3" json:"currentPeriodEnd,omitempty"`
+	CurrentPeriodScore  float64                `protobuf:"fixed64,6,opt,name=currentPeriodScore,proto3" json:"currentPeriodScore,omitempty"`
+	ChangePercentage    float64                `protobuf:"fixed64,7,opt,name=changePercentage,proto3" json:"changePercentage,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -364,11 +368,39 @@ func (*PeriodOverPeriodScoreChangeResponse) Descriptor() ([]byte, []int) {
 	return file_proto_scorer_proto_rawDescGZIP(), []int{6}
 }
 
+func (x *PeriodOverPeriodScoreChangeResponse) GetPreviousPeriodStart() string {
+	if x != nil {
+		return x.PreviousPeriodStart
+	}
+	return ""
+}
+
+func (x *PeriodOverPeriodScoreChangeResponse) GetPreviousPeriodEnd() string {
+	if x != nil {
+		return x.PreviousPeriodEnd
+	}
+	return ""
+}
+
 func (x *PeriodOverPeriodScoreChangeResponse) GetPreviousPeriodScore() float64 {
 	if x != nil {
 		return x.PreviousPeriodScore
 	}
 	return 0
+}
+
+func (x *PeriodOverPeriodScoreChangeResponse) GetCurrentPeriodStart() string {
+	if x != nil {
+		return x.CurrentPeriodStart
+	}
+	return ""
+}
+
+func (x *PeriodOverPeriodScoreChangeResponse) GetCurrentPeriodEnd() string {
+	if x != nil {
+		return x.CurrentPeriodEnd
+	}
+	return ""
 }
 
 func (x *PeriodOverPeriodScoreChangeResponse) GetCurrentPeriodScore() float64 {
@@ -414,11 +446,15 @@ const file_proto_scorer_proto_rawDesc = "" +
 	" AggregatedCategoryScoresResponse\x125\n" +
 	"\n" +
 	"categories\x18\x01 \x03(\v2\x15.scorer.CategoryScoreR\n" +
-	"categories\"\xb3\x01\n" +
+	"categories\"\xef\x02\n" +
 	"#PeriodOverPeriodScoreChangeResponse\x120\n" +
-	"\x13previousPeriodScore\x18\x01 \x01(\x01R\x13previousPeriodScore\x12.\n" +
-	"\x12currentPeriodScore\x18\x02 \x01(\x01R\x12currentPeriodScore\x12*\n" +
-	"\x10changePercentage\x18\x03 \x01(\x01R\x10changePercentage2\xdd\x02\n" +
+	"\x13previousPeriodStart\x18\x01 \x01(\tR\x13previousPeriodStart\x12,\n" +
+	"\x11previousPeriodEnd\x18\x02 \x01(\tR\x11previousPeriodEnd\x120\n" +
+	"\x13previousPeriodScore\x18\x03 \x01(\x01R\x13previousPeriodScore\x12.\n" +
+	"\x12currentPeriodStart\x18\x04 \x01(\tR\x12currentPeriodStart\x12*\n" +
+	"\x10currentPeriodEnd\x18\x05 \x01(\tR\x10currentPeriodEnd\x12.\n" +
+	"\x12currentPeriodScore\x18\x06 \x01(\x01R\x12currentPeriodScore\x12*\n" +
+	"\x10changePercentage\x18\a \x01(\x01R\x10changePercentage2\xdd\x02\n" +
 	"\rScorerService\x12]\n" +
 	"\x1bGetAggregatedCategoryScores\x12\x14.scorer.ScoreRequest\x1a(.scorer.AggregatedCategoryScoresResponse\x12H\n" +
 	"\x11GetScoresByTicket\x12\x14.scorer.ScoreRequest\x1a\x1d.scorer.ScoreByTicketResponse\x12>\n" +

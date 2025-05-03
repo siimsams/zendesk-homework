@@ -182,40 +182,38 @@ func (s *ScorerServer) GetPeriodOverPeriodScoreChange(ctx context.Context, req *
 
 	sqliteDB, err := database.OpenDB(s.DBPath)
 	if err != nil {
-		log.Printf("failed to open DB: %v", err)
 		return nil, err
 	}
 	defer sqliteDB.Close()
-
-	currentScore, err := database.GetCombinedScore(sqliteDB, start, end)
-	if err != nil {
-		log.Printf("failed to get current ratings: %v", err)
-		return nil, err
-	}
 
 	periodDuration := end.Sub(start)
 	previousStart := start.Add(-periodDuration)
 	previousEnd := end.Add(-periodDuration)
 
-	previousScore, err := database.GetCombinedScore(sqliteDB, previousStart, previousEnd)
+	currentScore, err := database.GetCombinedScore(sqliteDB, start, end)
 	if err != nil {
-		log.Printf("failed to get previous ratings: %v", err)
 		return nil, err
 	}
 
-	var change float64
+	previousScore, err := database.GetCombinedScore(sqliteDB, previousStart, previousEnd)
+	if err != nil {
+		return nil, err
+	}
 
+	change := 0.0
 	if previousScore != 0 {
 		change = ((currentScore - previousScore) / previousScore) * 100
 	} else if currentScore != 0 {
 		change = 100
-	} else {
-		change = 0
 	}
 
 	return &scorer.PeriodOverPeriodScoreChangeResponse{
 		CurrentPeriodScore:  currentScore,
+		CurrentPeriodStart:  start.Format(time.RFC3339),
+		CurrentPeriodEnd:    end.Format(time.RFC3339),
 		PreviousPeriodScore: previousScore,
+		PreviousPeriodStart: previousStart.Format(time.RFC3339),
+		PreviousPeriodEnd:   previousEnd.Format(time.RFC3339),
 		ChangePercentage:    change,
 	}, nil
 }

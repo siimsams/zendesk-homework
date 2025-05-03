@@ -1,0 +1,1 @@
+I used weighted average to calculate the percentages. 
