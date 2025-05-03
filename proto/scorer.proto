@@ -31,8 +31,13 @@ message ScoreByTicketResponse {
 message CategoryScore {
   string category = 1;
   int32 ratingCount = 2;
-  map<string, double> dateToScore = 3;
+  repeated DateScore dateToScore = 3;
   double overallScore = 4;
+}
+
+message DateScore {
+  string date = 1;
+  double score = 2;
 }
 
 message AggregatedCategoryScoresResponse {

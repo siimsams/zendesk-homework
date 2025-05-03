@@ -83,6 +83,7 @@ type CategoryAggregation struct {
 func GetCategoryAggregations(db *sql.DB, start, end time.Time) ([]CategoryAggregation, error) {
 	periodLength := end.Sub(start)
 	var groupBy string
+
 	if periodLength.Hours() > 24*31 {
 		groupBy = "strftime('%Y-W%W', r.created_at)"
 	} else {
@@ -100,7 +101,7 @@ func GetCategoryAggregations(db *sql.DB, start, end time.Time) ([]CategoryAggreg
 		JOIN rating_categories rc ON r.rating_category_id = rc.id
 		WHERE r.created_at BETWEEN ? AND ?
 		GROUP BY rc.id, period
-		ORDER BY rc.name, period
+		ORDER BY period
 	`, groupBy)
 
 	rows, err := db.Query(query, start, end)

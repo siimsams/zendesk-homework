@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"log"
+	"sort"
 	"time"
 
 	"github.com/siimsams/zendesk-homework/database"
@@ -133,7 +134,7 @@ func (s *ScorerServer) GetAggregatedCategoryScores(ctx context.Context, req *sco
 		weight       float64
 		totalRatings int
 		totalScore   float64
-		scoresByDate map[string]float64
+		scoresByDate []*scorer.DateScore
 	}
 
 	result := map[string]*tempAgg{}
@@ -146,13 +147,16 @@ func (s *ScorerServer) GetAggregatedCategoryScores(ctx context.Context, req *sco
 				weight:       agg.Weight,
 				totalRatings: 0,
 				totalScore:   0,
-				scoresByDate: make(map[string]float64),
+				scoresByDate: make([]*scorer.DateScore, 0),
 			}
 		}
 
 		result[agg.Name].totalRatings += agg.Count
 		result[agg.Name].totalScore += weightedScore * float64(agg.Count)
-		result[agg.Name].scoresByDate[agg.Period] = weightedScore
+		result[agg.Name].scoresByDate = append(result[agg.Name].scoresByDate, &scorer.DateScore{
+			Date:  agg.Period,
+			Score: weightedScore,
+		})
 	}
 
 	var output []*scorer.CategoryScore
@@ -161,6 +165,11 @@ func (s *ScorerServer) GetAggregatedCategoryScores(ctx context.Context, req *sco
 		if agg.totalRatings > 0 {
 			avgScore = agg.totalScore / float64(agg.totalRatings)
 		}
+
+		sort.Slice(agg.scoresByDate, func(i, j int) bool {
+			return agg.scoresByDate[i].Date < agg.scoresByDate[j].Date
+		})
+
 		output = append(output, &scorer.CategoryScore{
 			Category:     name,
 			RatingCount:  int32(agg.totalRatings),
