@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package scorer;
+option go_package = "github.com/siimsams/zendesk-homework/proto;scorer";
+
+service ScorerService {
+  rpc GetOverallScore (ScoreRequest) returns (ScoreResponse);
+}
+
+message ScoreRequest {
+  string startDate = 1;
+  string endDate = 2;
+}
+
+message ScoreResponse {
+  double scorePercentage = 1;
+}
