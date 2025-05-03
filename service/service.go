@@ -26,32 +26,6 @@ func parseDateRange(req *scorer.ScoreRequest) (time.Time, time.Time, error) {
 	return start, end, nil
 }
 
-func calculateWeightedScore(rating int, weight float64) float64 {
-	return (float64(rating) / 5.0) * weight
-}
-
-func calculateOverallScore(ratings []database.Rating) float64 {
-	if len(ratings) == 0 {
-		return 0
-	}
-
-	var (
-		totalWeightedScore float64
-		totalWeight        float64
-	)
-
-	for _, rating := range ratings {
-		totalWeightedScore += calculateWeightedScore(rating.Rating, rating.Weight)
-		totalWeight += rating.Weight
-	}
-
-	if totalWeight == 0 {
-		return 0
-	}
-
-	return (totalWeightedScore / totalWeight) * 100.0
-}
-
 func (s *ScorerServer) GetOverallScore(ctx context.Context, req *scorer.ScoreRequest) (*scorer.ScoreResponse, error) {
 	start, end, err := parseDateRange(req)
 	if err != nil {
@@ -65,13 +39,12 @@ func (s *ScorerServer) GetOverallScore(ctx context.Context, req *scorer.ScoreReq
 	}
 	defer sqliteDB.Close()
 
-	ratings, err := database.GetRatings(sqliteDB, start, end)
+	score, err := database.GetCombinedScore(sqliteDB, start, end)
 	if err != nil {
-		log.Printf("failed to get ratings: %v", err)
+		log.Printf("failed to get score: %v", err)
 		return nil, err
 	}
 
-	score := calculateOverallScore(ratings)
 	return &scorer.ScoreResponse{
 		ScorePercentage: score,
 	}, nil
@@ -214,7 +187,7 @@ func (s *ScorerServer) GetPeriodOverPeriodScoreChange(ctx context.Context, req *
 	}
 	defer sqliteDB.Close()
 
-	currentRatings, err := database.GetRatings(sqliteDB, start, end)
+	currentScore, err := database.GetCombinedScore(sqliteDB, start, end)
 	if err != nil {
 		log.Printf("failed to get current ratings: %v", err)
 		return nil, err
@@ -224,16 +197,14 @@ func (s *ScorerServer) GetPeriodOverPeriodScoreChange(ctx context.Context, req *
 	previousStart := start.Add(-periodDuration)
 	previousEnd := end.Add(-periodDuration)
 
-	previousRatings, err := database.GetRatings(sqliteDB, previousStart, previousEnd)
+	previousScore, err := database.GetCombinedScore(sqliteDB, previousStart, previousEnd)
 	if err != nil {
 		log.Printf("failed to get previous ratings: %v", err)
 		return nil, err
 	}
 
-	currentScore := calculateOverallScore(currentRatings)
-	previousScore := calculateOverallScore(previousRatings)
-
 	var change float64
+
 	if previousScore != 0 {
 		change = ((currentScore - previousScore) / previousScore) * 100
 	} else if currentScore != 0 {

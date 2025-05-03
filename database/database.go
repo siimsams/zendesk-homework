@@ -16,32 +16,26 @@ func OpenDB(path string) (*sql.DB, error) {
 	return db, nil
 }
 
-type Rating struct {
-	Rating int
-	Weight float64
+type Score struct {
+	ScorePercent float64
 }
 
-func GetRatings(db *sql.DB, start, end time.Time) ([]Rating, error) {
-	rows, err := db.Query(`
-		SELECT r.rating, rc.weight
+func GetCombinedScore(db *sql.DB, start, end time.Time) (float64, error) {
+	row := db.QueryRow(`
+		SELECT 
+			COALESCE(SUM(r.rating * rc.weight) / NULLIF(SUM(rc.weight), 0) / 5.0 * 100.0, 0)
 		FROM ratings r
 		JOIN rating_categories rc ON r.rating_category_id = rc.id
 		WHERE r.created_at BETWEEN ? AND ?
 	`, start.Format(time.RFC3339), end.Format(time.RFC3339))
-	if err != nil {
-		return nil, fmt.Errorf("query failed: %w", err)
-	}
-	defer rows.Close()
 
-	var ratings []Rating
-	for rows.Next() {
-		var rating Rating
-		if err := rows.Scan(&rating.Rating, &rating.Weight); err != nil {
-			return nil, err
-		}
-		ratings = append(ratings, rating)
+	var score float64
+	err := row.Scan(&score)
+	if err != nil {
+		return -1, fmt.Errorf("scan failed: %w", err)
 	}
-	return ratings, nil
+
+	return score, nil
 }
 
 type TicketRating struct {
@@ -55,12 +49,12 @@ func GetTicketRatingForEachCategory(db *sql.DB, start, end time.Time) ([]TicketR
 		SELECT
 			t.id AS ticket_id,
 			rc.name AS category_name,
-			MIN((AVG(r.rating) / 5.0 * rc.weight * 100), 100.0) AS category_score_percent
+			COALESCE(SUM(r.rating * rc.weight) / NULLIF(SUM(rc.weight), 0) / 5.0 * 100.0, 0) AS category_score_percent
 		FROM tickets t
 		JOIN ratings r ON t.id = r.ticket_id
 		JOIN rating_categories rc ON r.rating_category_id = rc.id
 		WHERE t.created_at BETWEEN ? AND ?
-		GROUP BY t.id, rc.id, rc.name, rc.weight
+		GROUP BY t.id, rc.id, rc.name
 	`, start.Format(time.RFC3339), end.Format(time.RFC3339))
 	if err != nil {
 		return nil, fmt.Errorf("query failed: %w", err)
