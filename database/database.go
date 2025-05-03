@@ -27,7 +27,7 @@ func GetCombinedScore(db *sql.DB, start, end time.Time) (float64, error) {
 		FROM ratings r
 		JOIN rating_categories rc ON r.rating_category_id = rc.id
 		WHERE r.created_at BETWEEN ? AND ?
-	`, start.Format(time.RFC3339), end.Format(time.RFC3339))
+	`, start, end)
 
 	var score float64
 	err := row.Scan(&score)
@@ -40,7 +40,7 @@ func GetCombinedScore(db *sql.DB, start, end time.Time) (float64, error) {
 
 type TicketRating struct {
 	TicketID             int64
-	RatingCategoryName   string
+	RatingCategoryId     string
 	CategoryScorePercent float64
 }
 
@@ -48,14 +48,14 @@ func GetTicketRatingForEachCategory(db *sql.DB, start, end time.Time) ([]TicketR
 	rows, err := db.Query(`
 		SELECT
 			t.id AS ticket_id,
-			rc.name AS category_name,
+			rc.id AS category_id,
 			COALESCE(SUM(r.rating * rc.weight) / NULLIF(SUM(rc.weight), 0) / 5.0 * 100.0, 0) AS category_score_percent
 		FROM tickets t
 		JOIN ratings r ON t.id = r.ticket_id
 		JOIN rating_categories rc ON r.rating_category_id = rc.id
 		WHERE t.created_at BETWEEN ? AND ?
-		GROUP BY t.id, rc.id, rc.name
-	`, start.Format(time.RFC3339), end.Format(time.RFC3339))
+		GROUP BY t.id, rc.id
+	`, start, end)
 	if err != nil {
 		return nil, fmt.Errorf("query failed: %w", err)
 	}
@@ -64,7 +64,7 @@ func GetTicketRatingForEachCategory(db *sql.DB, start, end time.Time) ([]TicketR
 	var ticketRatings []TicketRating
 	for rows.Next() {
 		var tr TicketRating
-		if err := rows.Scan(&tr.TicketID, &tr.RatingCategoryName, &tr.CategoryScorePercent); err != nil {
+		if err := rows.Scan(&tr.TicketID, &tr.RatingCategoryId, &tr.CategoryScorePercent); err != nil {
 			return nil, err
 		}
 		ticketRatings = append(ticketRatings, tr)
@@ -103,7 +103,7 @@ func GetCategoryAggregations(db *sql.DB, start, end time.Time) ([]CategoryAggreg
 		ORDER BY rc.name, period
 	`, groupBy)
 
-	rows, err := db.Query(query, start.Format(time.RFC3339), end.Format(time.RFC3339))
+	rows, err := db.Query(query, start, end)
 	if err != nil {
 		return nil, fmt.Errorf("query failed: %w", err)
 	}

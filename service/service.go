@@ -68,7 +68,7 @@ func processSingleTicketRating(tr database.TicketRating,
 	ticketScores *[]*scorer.TicketScore) error {
 
 	if _, exists := ticketScoresMap[tr.TicketID]; exists {
-		ticketScoresMap[tr.TicketID][tr.RatingCategoryName] = tr.CategoryScorePercent
+		ticketScoresMap[tr.TicketID][tr.RatingCategoryId] = tr.CategoryScorePercent
 		return nil
 	}
 
@@ -77,7 +77,7 @@ func processSingleTicketRating(tr database.TicketRating,
 		TicketId:       tr.TicketID,
 		CategoryScores: ticketScoresMap[tr.TicketID],
 	})
-	ticketScoresMap[tr.TicketID][tr.RatingCategoryName] = tr.CategoryScorePercent
+	ticketScoresMap[tr.TicketID][tr.RatingCategoryId] = tr.CategoryScorePercent
 	return nil
 }
 
