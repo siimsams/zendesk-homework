@@ -45,19 +45,22 @@ func GetRatings(db *sql.DB, start, end time.Time) ([]Rating, error) {
 }
 
 type TicketRating struct {
-	TicketID string
-	Subject  string
-	Rating   int
-	Weight   float64
+	TicketID             int64
+	RatingCategoryName   string
+	CategoryScorePercent float64
 }
 
-func GetTicketRatings(db *sql.DB, start, end time.Time) ([]TicketRating, error) {
+func GetTicketRatingForEachCategory(db *sql.DB, start, end time.Time) ([]TicketRating, error) {
 	rows, err := db.Query(`
-		SELECT t.id, t.subject, r.rating, rc.weight
+		SELECT
+			t.id AS ticket_id,
+			rc.name AS category_name,
+			MIN((AVG(r.rating) / 5.0 * rc.weight * 100), 100.0) AS category_score_percent
 		FROM tickets t
 		JOIN ratings r ON t.id = r.ticket_id
 		JOIN rating_categories rc ON r.rating_category_id = rc.id
 		WHERE t.created_at BETWEEN ? AND ?
+		GROUP BY t.id, rc.id, rc.name, rc.weight
 	`, start.Format(time.RFC3339), end.Format(time.RFC3339))
 	if err != nil {
 		return nil, fmt.Errorf("query failed: %w", err)
@@ -67,7 +70,7 @@ func GetTicketRatings(db *sql.DB, start, end time.Time) ([]TicketRating, error) 
 	var ticketRatings []TicketRating
 	for rows.Next() {
 		var tr TicketRating
-		if err := rows.Scan(&tr.TicketID, &tr.Subject, &tr.Rating, &tr.Weight); err != nil {
+		if err := rows.Scan(&tr.TicketID, &tr.RatingCategoryName, &tr.CategoryScorePercent); err != nil {
 			return nil, err
 		}
 		ticketRatings = append(ticketRatings, tr)

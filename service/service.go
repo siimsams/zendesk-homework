@@ -2,9 +2,7 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/siimsams/zendesk-homework/database"
@@ -28,13 +26,22 @@ func parseDateRange(req *scorer.ScoreRequest) (time.Time, time.Time, error) {
 	return start, end, nil
 }
 
+func calculateWeightedScore(rating int, weight float64) float64 {
+	return (float64(rating) / 5.0) * weight
+}
+
 func calculateOverallScore(ratings []database.Rating) float64 {
-	var totalWeightedScore float64
-	var totalWeight float64
+	if len(ratings) == 0 {
+		return 0
+	}
+
+	var (
+		totalWeightedScore float64
+		totalWeight        float64
+	)
 
 	for _, rating := range ratings {
-		score := (float64(rating.Rating) / 5.0) * rating.Weight
-		totalWeightedScore += score
+		totalWeightedScore += calculateWeightedScore(rating.Rating, rating.Weight)
 		totalWeight += rating.Weight
 	}
 
@@ -70,6 +77,37 @@ func (s *ScorerServer) GetOverallScore(ctx context.Context, req *scorer.ScoreReq
 	}, nil
 }
 
+func groupTicketScores(ticketRatingsForEachCategory []database.TicketRating) ([]*scorer.TicketScore, error) {
+	ticketScores := make([]*scorer.TicketScore, 0)
+	ticketScoresMap := make(map[int64]map[string]float64)
+
+	for _, tr := range ticketRatingsForEachCategory {
+		if err := processSingleTicketRating(tr, ticketScoresMap, &ticketScores); err != nil {
+			return nil, err
+		}
+	}
+
+	return ticketScores, nil
+}
+
+func processSingleTicketRating(tr database.TicketRating,
+	ticketScoresMap map[int64]map[string]float64,
+	ticketScores *[]*scorer.TicketScore) error {
+
+	if _, exists := ticketScoresMap[tr.TicketID]; exists {
+		ticketScoresMap[tr.TicketID][tr.RatingCategoryName] = tr.CategoryScorePercent
+		return nil
+	}
+
+	ticketScoresMap[tr.TicketID] = make(map[string]float64)
+	*ticketScores = append(*ticketScores, &scorer.TicketScore{
+		TicketId:       tr.TicketID,
+		CategoryScores: ticketScoresMap[tr.TicketID],
+	})
+	ticketScoresMap[tr.TicketID][tr.RatingCategoryName] = tr.CategoryScorePercent
+	return nil
+}
+
 func (s *ScorerServer) GetScoresByTicket(ctx context.Context, req *scorer.ScoreRequest) (*scorer.ScoreByTicketResponse, error) {
 	start, end, err := parseDateRange(req)
 	if err != nil {
@@ -83,25 +121,15 @@ func (s *ScorerServer) GetScoresByTicket(ctx context.Context, req *scorer.ScoreR
 	}
 	defer sqliteDB.Close()
 
-	ticketRatings, err := database.GetTicketRatings(sqliteDB, start, end)
+	ticketRatingsForEachCategory, err := database.GetTicketRatingForEachCategory(sqliteDB, start, end)
 	if err != nil {
 		log.Printf("failed to get ticket ratings: %v", err)
 		return nil, err
 	}
 
-	ticketScores := []*scorer.TicketScore{}
-	for _, tr := range ticketRatings {
-		score := (float64(tr.Rating) / 5.0) * tr.Weight
-		ticketIDInt64, err := strconv.ParseInt(tr.TicketID, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("invalid ticket ID: %w", err)
-		}
-		ticketScores = append(ticketScores, &scorer.TicketScore{
-			TicketId: ticketIDInt64,
-			CategoryScores: map[string]float64{
-				"Overall": score,
-			},
-		})
+	ticketScores, err := groupTicketScores(ticketRatingsForEachCategory)
+	if err != nil {
+		return nil, err
 	}
 
 	return &scorer.ScoreByTicketResponse{
