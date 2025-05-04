@@ -5,3 +5,4 @@ TODO:
 - Optimize queries and add indexes
 - Add function to generate JWT for testing
 - Make it Kubernetes friendly
+- Add in memory caching

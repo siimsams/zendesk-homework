@@ -5,14 +5,29 @@ import (
 	"fmt"
 	"time"
 
+	"go.nhat.io/otelsql"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	_ "modernc.org/sqlite"
 )
 
 func OpenDB(path string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite", path)
+	driverName, err := otelsql.Register("sqlite",
+		otelsql.AllowRoot(),
+		otelsql.TraceQueryWithoutArgs(),
+		otelsql.TraceRowsClose(),
+		otelsql.TraceRowsAffected(),
+		otelsql.WithDatabaseName("my_database"),
+		otelsql.WithSystem(semconv.DBSystemSqlite),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to register otelsql driver: %w", err)
+	}
+
+	db, err := sql.Open(driverName, path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
+
 	return db, nil
 }
 

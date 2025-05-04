@@ -7,6 +7,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
@@ -27,10 +28,20 @@ func LoggingUnaryInterceptor(
 		client = p.Addr.String()
 	}
 
+	spanCtx := trace.SpanContextFromContext(ctx)
+	traceID := spanCtx.TraceID().String()
+	spanID := spanCtx.SpanID().String()
+
 	logEvent := log.Info().
 		Str("method", info.FullMethod).
 		Str("client", client).
 		Dur("duration", duration)
+
+	if spanCtx.IsValid() {
+		logEvent = logEvent.
+			Str("trace_id", traceID).
+			Str("span_id", spanID)
+	}
 
 	if err != nil {
 		logEvent.Err(err).

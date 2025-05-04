@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net"
 	"os"
 
@@ -8,9 +9,11 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/siimsams/zendesk-homework/authentication"
 	"github.com/siimsams/zendesk-homework/env"
-	"github.com/siimsams/zendesk-homework/logging"
+	"github.com/siimsams/zendesk-homework/observability/logging"
+	"github.com/siimsams/zendesk-homework/observability/tracing"
 	scorer "github.com/siimsams/zendesk-homework/proto"
 	"github.com/siimsams/zendesk-homework/service"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -18,6 +21,11 @@ import (
 func main() {
 	// Load configuration
 	config := env.GetConfig()
+
+	// Set up tracing
+	ctx := context.Background()
+	cleanup := tracing.InitTracer(ctx, "zendesk-homework")
+	defer cleanup(ctx)
 
 	// Set up logging
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
@@ -36,6 +44,7 @@ func main() {
 			logging.LoggingUnaryInterceptor,
 			authentication.AuthUnaryInterceptor,
 		),
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 	)
 
 	// Register the scorer service

@@ -2,10 +2,10 @@ package service
 
 import (
 	"context"
-	"log"
 	"sort"
 	"time"
 
+	"github.com/rs/zerolog"
 	"github.com/siimsams/zendesk-homework/database"
 	scorer "github.com/siimsams/zendesk-homework/proto"
 )
@@ -35,14 +35,14 @@ func (s *ScorerServer) GetOverallScore(ctx context.Context, req *scorer.ScoreReq
 
 	sqliteDB, err := database.OpenDB(s.DBPath)
 	if err != nil {
-		log.Printf("failed to open DB: %v", err)
+		zerolog.Ctx(ctx).Error().Err(err).Str("db_path", s.DBPath).Msg("failed to open DB")
 		return nil, err
 	}
 	defer sqliteDB.Close()
 
 	score, err := database.GetCombinedScore(sqliteDB, start, end)
 	if err != nil {
-		log.Printf("failed to get score: %v", err)
+		zerolog.Ctx(ctx).Error().Err(err).Time("start_date", start).Time("end_date", end).Msg("failed to get score")
 		return nil, err
 	}
 
@@ -90,14 +90,14 @@ func (s *ScorerServer) GetCategoryScoresByTicket(ctx context.Context, req *score
 
 	sqliteDB, err := database.OpenDB(s.DBPath)
 	if err != nil {
-		log.Printf("failed to open DB: %v", err)
+		zerolog.Ctx(ctx).Error().Err(err).Str("db_path", s.DBPath).Msg("failed to open DB")
 		return nil, err
 	}
 	defer sqliteDB.Close()
 
 	ticketRatingsForEachCategory, err := database.GetTicketRatingForEachCategory(sqliteDB, start, end)
 	if err != nil {
-		log.Printf("failed to get ticket ratings: %v", err)
+		zerolog.Ctx(ctx).Error().Err(err).Time("start_date", start).Time("end_date", end).Msg("failed to get ticket ratings")
 		return nil, err
 	}
 
@@ -180,14 +180,14 @@ func (s *ScorerServer) GetCategoryScores(ctx context.Context, req *scorer.ScoreR
 
 	sqliteDB, err := database.OpenDB(s.DBPath)
 	if err != nil {
-		log.Printf("failed to open DB: %v", err)
+		zerolog.Ctx(ctx).Error().Err(err).Str("db_path", s.DBPath).Msg("failed to open DB")
 		return nil, err
 	}
 	defer sqliteDB.Close()
 
 	aggregations, err := database.GetCategoryAggregations(sqliteDB, start, end)
 	if err != nil {
-		log.Printf("failed to get category aggregations: %v", err)
+		zerolog.Ctx(ctx).Error().Err(err).Time("start_date", start).Time("end_date", end).Msg("failed to get category aggregations")
 		return nil, err
 	}
 
@@ -207,6 +207,7 @@ func (s *ScorerServer) GetPeriodOverPeriodChange(ctx context.Context, req *score
 
 	sqliteDB, err := database.OpenDB(s.DBPath)
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Str("db_path", s.DBPath).Msg("failed to open DB")
 		return nil, err
 	}
 	defer sqliteDB.Close()
@@ -217,11 +218,13 @@ func (s *ScorerServer) GetPeriodOverPeriodChange(ctx context.Context, req *score
 
 	currentScore, err := database.GetCombinedScore(sqliteDB, start, end)
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Time("start_date", start).Time("end_date", end).Msg("failed to get current period score")
 		return nil, err
 	}
 
 	previousScore, err := database.GetCombinedScore(sqliteDB, previousStart, previousEnd)
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Time("start_date", previousStart).Time("end_date", previousEnd).Msg("failed to get previous period score")
 		return nil, err
 	}
 
