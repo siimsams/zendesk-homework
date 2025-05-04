@@ -1,57 +1,118 @@
-# Software Engineer Test Task
+# How to run?
 
-As a test task for [Klaus](https://www.klausapp.com) software engineering position we ask our candidates to build a small [gRPC](https://grpc.io) service using language of their choice. Preferred language for new services in Klaus is [Go](https://golang.org).
+There are multiple ways to run this. You can run it using kubernetes, docker compose or go. 
 
-The service should be using provided sample data from SQLite database (`database.db`).
+## docker-compose
 
-Please fork this repository and share the link to your solution with us.
+Run the following command in the root.
+```bash
+docker compose up
+```
 
-### Tasks
+Service is available at:
+grpc://localhost:50051
 
-1. Come up with ticket score algorithm that accounts for rating category weights (available in `rating_categories` table). Ratings are given in a scale of 0 to 5. Score should be representable in percentages from 0 to 100. 
+Traces are available at
+http://localhost:16686/
 
-2. Build a service that can be queried using [gRPC](https://grpc.io/docs/tutorials/basic/go/) calls and can answer following questions:
+## Go
 
-    * **Aggregated category scores over a period of time**
-    
-        E.g. what have the daily ticket scores been for a past week or what were the scores between 1st and 31st of January.
+Run the following command in the root.
+```bash
+go run main.go
+```
 
-        For periods longer than one month weekly aggregates should be returned instead of daily values.
+Service is available at:
+grpc://localhost:50051
 
-        From the response the following UI representation should be possible:
+## Kubernetes
 
-        | Category | Ratings | Date 1 | Date 2 | ... | Score |
-        |----|----|----|----|----|----|
-        | Tone | 1 | 30% | N/A | N/A | X% |
-        | Grammar | 2 | N/A | 90% | 100% | X% |
-        | Random | 6 | 12% | 10% | 10% | X% |
+Run the following commands in the root.
+```bash
+minikube start
 
-    * **Scores by ticket**
+eval $(minikube docker-env)
 
-        Aggregate scores for categories within defined period by ticket.
+docker build -t zendesk-homework .
 
-        E.g. what aggregate category scores tickets have within defined rating time range have.
+kubectl apply -f k8s/
 
-        | Ticket ID | Category 1 | Category 2 |
-        |----|----|----|
-        | 1   |  100%  |  30%  |
-        | 2   |  30%  |  80%  |
+kubectl port-forward service/app 50051:50051
+```
 
-    * **Overall quality score**
+Service is available at:
+grpc://localhost:50051
 
-        What is the overall aggregate score for a period.
+If you wish to access Jaeger.
+```bash
+kubectl port-forward service/jaeger 16686:16686
+```
 
-        E.g. the overall score over past week has been 96%.
+Traces are available at
+http://localhost:16686/
 
-    * **Period over Period score change**
+# About tests and testing
 
-        What has been the change from selected period over previous period.
+I have added some unit tests. But I've used mainly integration tests to cover the application.
 
-        E.g. current week vs. previous week or December vs. January change in percentages.
+```bash
+go test ./...
+```
 
+If you want to test this by hand please generate a JWT. For this you can use:
+https://jwt.io/
 
-### Bonus
+Default JWT secret is `very-secret-key`
 
-* How would you build and deploy the solution?
+I have also added server reflection. So you can use that to set up POSTMAN. Remember to add the Authorization.
 
-    At Klaus we make heavy use of containers and [Kubernetes](https://kubernetes.io).
+# What I did and why?
+
+I implemented a gRPC service that calculates ticket scores based on weighted categories. Here's a detailed breakdown of the implementation:
+
+## Score Calculation Algorithm
+I used a weighted average algorithm to calculate the percentages. This approach was chosen because:
+- It properly accounts for the importance of different rating categories through their weights
+- It provides a fair representation of overall performance by considering both the rating values and their relative importance
+- The formula `(rating * weight) / (sum of weights) / 5.0 * 100.0` ensures scores are normalized to a 0-100% scale
+
+## Service Architecture
+The service is built with:
+- gRPC for efficient communication and type safety
+- SQLite for data storage (with the option to switch to other databases in production)
+- OpenTelemetry for observability and tracing
+- JWT authentication for secure access
+
+## Key Features
+1. **Aggregated Category Scores**
+   - Calculates daily scores for periods under a month
+   - Automatically switches to weekly aggregation for longer periods
+   - Provides both individual category scores and overall performance metrics
+
+2. **Ticket-Level Analysis**
+   - Breaks down scores by individual tickets
+   - Shows category-specific performance for each ticket
+   - Helps identify patterns and areas for improvement
+
+3. **Overall Quality Score**
+   - Calculates a single percentage score representing overall performance
+   - Considers all ratings and their weights
+   - Provides a quick snapshot of quality across all categories
+
+4. **Period-over-Period Comparison**
+   - Calculates percentage changes between time periods
+   - Useful for tracking performance trends
+   - Handles edge cases like zero scores in previous periods
+
+## Technical Decisions
+- Used Go as the primary language due to Klaus using GO for new services
+- Implemented server reflection for easier testing and debugging
+- Added comprehensive integration tests to ensure reliability
+- Designed the service to be container-friendly for easy deployment
+
+## Future Improvements
+While the current implementation is functional, there are several areas that could be enhanced:
+- Database migration system for schema changes
+- Response caching for better performance
+- Query optimization with proper indexing
+- Chunking for handling large datasets efficiently

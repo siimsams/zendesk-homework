@@ -22,6 +22,12 @@ func main() {
 	// Load configuration
 	config := env.GetConfig()
 
+	if err := startServer(config); err != nil {
+		log.Fatal().Err(err).Msg("Failed to start gRPC server")
+	}
+}
+
+func startServer(config env.Config) error {
 	// Set up tracing
 	ctx := context.Background()
 	cleanup := tracing.InitTracer(ctx, "zendesk-homework")
@@ -60,4 +66,6 @@ func main() {
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatal().Err(err).Msg("gRPC server failed to start")
 	}
+
+	return nil
 }
