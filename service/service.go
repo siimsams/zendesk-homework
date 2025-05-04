@@ -27,7 +27,7 @@ func parseDateRange(req *scorer.ScoreRequest) (time.Time, time.Time, error) {
 	return start, end, nil
 }
 
-func (s *ScorerServer) GetOverallScore(ctx context.Context, req *scorer.ScoreRequest) (*scorer.ScoreResponse, error) {
+func (s *ScorerServer) GetOverallScore(ctx context.Context, req *scorer.ScoreRequest) (*scorer.OverallScoreResponse, error) {
 	start, end, err := parseDateRange(req)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (s *ScorerServer) GetOverallScore(ctx context.Context, req *scorer.ScoreReq
 		return nil, err
 	}
 
-	return &scorer.ScoreResponse{
+	return &scorer.OverallScoreResponse{
 		ScorePercentage: score,
 	}, nil
 }
@@ -82,7 +82,7 @@ func processSingleTicketRating(tr database.TicketRating,
 	return nil
 }
 
-func (s *ScorerServer) GetScoresByTicket(ctx context.Context, req *scorer.ScoreRequest) (*scorer.ScoreByTicketResponse, error) {
+func (s *ScorerServer) GetCategoryScoresByTicket(ctx context.Context, req *scorer.ScoreRequest) (*scorer.CategoryScoresByTicketResponse, error) {
 	start, end, err := parseDateRange(req)
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (s *ScorerServer) GetScoresByTicket(ctx context.Context, req *scorer.ScoreR
 		return nil, err
 	}
 
-	return &scorer.ScoreByTicketResponse{
+	return &scorer.CategoryScoresByTicketResponse{
 		TicketScores: ticketScores,
 	}, nil
 }
@@ -172,7 +172,7 @@ func convertToCategoryScores(aggregations map[string]*categoryAggregation) []*sc
 	return output
 }
 
-func (s *ScorerServer) GetAggregatedCategoryScores(ctx context.Context, req *scorer.ScoreRequest) (*scorer.AggregatedCategoryScoresResponse, error) {
+func (s *ScorerServer) GetCategoryScores(ctx context.Context, req *scorer.ScoreRequest) (*scorer.CategoryScoresResponse, error) {
 	start, end, err := parseDateRange(req)
 	if err != nil {
 		return nil, err
@@ -194,12 +194,12 @@ func (s *ScorerServer) GetAggregatedCategoryScores(ctx context.Context, req *sco
 	processedAggregations := processAggregations(aggregations)
 	categoryScores := convertToCategoryScores(processedAggregations)
 
-	return &scorer.AggregatedCategoryScoresResponse{
+	return &scorer.CategoryScoresResponse{
 		Categories: categoryScores,
 	}, nil
 }
 
-func (s *ScorerServer) GetPeriodOverPeriodScoreChange(ctx context.Context, req *scorer.ScoreRequest) (*scorer.PeriodOverPeriodScoreChangeResponse, error) {
+func (s *ScorerServer) GetPeriodOverPeriodChange(ctx context.Context, req *scorer.ScoreRequest) (*scorer.PeriodOverPeriodChangeResponse, error) {
 	start, end, err := parseDateRange(req)
 	if err != nil {
 		return nil, err
@@ -232,7 +232,7 @@ func (s *ScorerServer) GetPeriodOverPeriodScoreChange(ctx context.Context, req *
 		change = 100
 	}
 
-	return &scorer.PeriodOverPeriodScoreChangeResponse{
+	return &scorer.PeriodOverPeriodChangeResponse{
 		CurrentPeriodScore:  currentScore,
 		CurrentPeriodStart:  start.Format(time.RFC3339),
 		CurrentPeriodEnd:    end.Format(time.RFC3339),
