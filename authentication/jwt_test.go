@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/siimsams/zendesk-homework/env"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -121,7 +122,7 @@ func generateValidToken(t *testing.T) string {
 		NotBefore: jwt.NewNumericDate(time.Now()),
 	})
 
-	tokenString, err := token.SignedString(jwtSecret)
+	tokenString, err := token.SignedString(env.JwtSecretBytes())
 	if err != nil {
 		t.Fatalf("failed to generate valid token: %v", err)
 	}
@@ -135,7 +136,7 @@ func generateExpiredToken(t *testing.T) string {
 		NotBefore: jwt.NewNumericDate(time.Now().Add(-48 * time.Hour)),
 	})
 
-	tokenString, err := token.SignedString(jwtSecret)
+	tokenString, err := token.SignedString(env.JwtSecretBytes())
 	if err != nil {
 		t.Fatalf("failed to generate expired token: %v", err)
 	}

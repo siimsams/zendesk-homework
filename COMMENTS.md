@@ -2,6 +2,7 @@ I used weighted average to calculate the percentages.
 
 TODO: 
 - Add tests
-- Add auth
 - Optimize queries and add indexes
-- Refactor GetAggregatedCategoryScores
+- Add function to generate JWT for testing
+- Make it Kubernetes friendly
+- Add logging

@@ -6,16 +6,15 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/siimsams/zendesk-homework/env"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
-var jwtSecret = []byte("my_secret_key")
-
 func validateJWT(tokenStr string) (*jwt.RegisteredClaims, error) {
 	tokenStr = strings.TrimPrefix(tokenStr, "Bearer ")
 	token, err := jwt.ParseWithClaims(tokenStr, &jwt.RegisteredClaims{}, func(token *jwt.Token) (any, error) {
-		return jwtSecret, nil
+		return env.JwtSecretBytes(), nil
 	})
 	if err != nil || !token.Valid {
 		return nil, fmt.Errorf("invalid token: %w", err)
