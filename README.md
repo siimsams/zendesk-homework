@@ -74,7 +74,6 @@ I implemented a gRPC service that calculates ticket scores based on weighted cat
 I used a weighted average algorithm to calculate the percentages. This approach was chosen because:
 - It properly accounts for the importance of different rating categories through their weights
 - It provides a fair representation of overall performance by considering both the rating values and their relative importance
-- The formula `(rating * weight) / (sum of weights) / 5.0 * 100.0` ensures scores are normalized to a 0-100% scale
 
 ## Service Architecture
 The service is built with:
@@ -112,7 +111,7 @@ The service is built with:
 
 ## Future Improvements
 While the current implementation is functional, there are several areas that could be enhanced:
-- Database migration system for schema changes
-- Response caching for better performance
-- Query optimization with proper indexing
-- Chunking for handling large datasets efficiently
+- Database migration system for schema changes. 
+- Response caching for better performance. 
+- Query optimization with proper indexing. I tested this and it did not give boost due to this project using SQLITE. 
+- Chunking for handling large datasets efficiently. This would help make smaller queries instead of one big one.
