@@ -1,8 +1,8 @@
 I used weighted average to calculate the percentages. 
 
+Traces are available here: http://localhost:16686
+
 TODO: 
 - Add tests
 - Optimize queries and add indexes
-- Add function to generate JWT for testing
-- Make it Kubernetes friendly
 - Add in memory caching
