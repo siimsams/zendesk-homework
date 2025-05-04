@@ -15,7 +15,7 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY --from=builder /app/main .
-COPY --from=builder /app/database.db .
+COPY --from=builder /app/database.db /app/data/database.db
 
 EXPOSE 50051
 

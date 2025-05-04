@@ -2,12 +2,13 @@ version: '3.8'
 
 services:
   app:
+    image: zendesk-homework
     build: .
     ports:
       - "50051:50051"
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
-      - DB_PATH=/app/database.db
+      - DB_PATH=/app/data/database.db
     depends_on:
       - jaeger
 
