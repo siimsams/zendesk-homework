@@ -1,11 +1,14 @@
 package main
 
 import (
-	"log"
 	"net"
+	"os"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/siimsams/zendesk-homework/authentication"
 	"github.com/siimsams/zendesk-homework/env"
+	"github.com/siimsams/zendesk-homework/logging"
 	scorer "github.com/siimsams/zendesk-homework/proto"
 	"github.com/siimsams/zendesk-homework/service"
 	"google.golang.org/grpc"
@@ -13,20 +16,39 @@ import (
 )
 
 func main() {
+	// Load configuration
 	config := env.GetConfig()
 
-	lis, err := net.Listen("tcp", ":"+config.Port)
+	// Set up logging
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	logging.SetLogLevel(config.LogLevel)
+
+	// Start TCP listener
+	address := ":" + config.Port
+	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatal().Err(err).Msg("Failed to listen on port " + config.Port)
 	}
 
-	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(authentication.AuthUnaryInterceptor))
+	// Set up gRPC server with interceptors
+	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			logging.LoggingUnaryInterceptor,
+			authentication.AuthUnaryInterceptor,
+		),
+	)
+
+	// Register the scorer service
 	scorer.RegisterScorerServiceServer(grpcServer, &service.ScorerServer{
 		DBPath: config.DbPath,
 	})
+
+	// Enable reflection for debugging
 	reflection.Register(grpcServer)
-	log.Printf("gRPC server listening on :%s", config.Port)
-	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+
+	// Start serving
+	log.Info().Msg("gRPC server listening on " + address)
+	if err := grpcServer.Serve(listener); err != nil {
+		log.Fatal().Err(err).Msg("gRPC server failed to start")
 	}
 }

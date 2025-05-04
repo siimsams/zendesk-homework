@@ -8,7 +8,9 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/siimsams/zendesk-homework/env"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 func validateJWT(tokenStr string) (*jwt.RegisteredClaims, error) {
@@ -29,23 +31,23 @@ func validateJWT(tokenStr string) (*jwt.RegisteredClaims, error) {
 
 func AuthUnaryInterceptor(
 	ctx context.Context,
-	req interface{},
+	req any,
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
-) (interface{}, error) {
+) (any, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, fmt.Errorf("missing metadata")
+		return nil, status.Error(codes.Unauthenticated, "missing metadata")
 	}
 
 	authHeader, ok := md["authorization"]
 	if !ok || len(authHeader) == 0 {
-		return nil, fmt.Errorf("authorization token not supplied")
+		return nil, status.Error(codes.Unauthenticated, "authorization token not supplied")
 	}
 
 	_, err := validateJWT(authHeader[0])
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Unauthenticated, fmt.Sprintf("invalid token: %v", err))
 	}
 
 	return handler(ctx, req)

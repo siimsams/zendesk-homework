@@ -9,6 +9,7 @@ type Config struct {
 	Port      string `env:"PORT" envDefault:"50051"`
 	DbPath    string `env:"DB_PATH" envDefault:"database.db"`
 	JwtSecret string `env:"JWT_SECRET" envDefault:"your-secret-key"`
+	LogLevel  string `env:"LOG_LEVEL" envDefault:"info"`
 }
 
 var config Config
