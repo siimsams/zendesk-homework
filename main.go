@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/siimsams/zendesk-homework/authentication"
 	scorer "github.com/siimsams/zendesk-homework/proto"
 	"github.com/siimsams/zendesk-homework/service"
 	"google.golang.org/grpc"
@@ -16,7 +17,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(authentication.AuthUnaryInterceptor))
 	scorer.RegisterScorerServiceServer(grpcServer, &service.ScorerServer{
 		DBPath: "database.db",
 	})
